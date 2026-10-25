@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Online Doctor Appointment System</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f4f8fc;
+    color:#243447;
+}
+
+header{
+    background:#087e8b;
+    color:white;
+    padding:18px;
+}
+
+nav{
+    max-width:1100px;
+    margin:auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+}
+
+nav h2{
+    font-size:24px;
+}
+
+nav button{
+    padding:10px 14px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    margin:3px;
+    font-weight:bold;
+}
+
+.hero{
+    background:#dff5f3;
+    padding:45px 20px;
+    text-align:center;
+}
+
+.hero h1{
+    font-size:35px;
+    color:#075b65;
+    margin-bottom:15px;
+}
+
+.hero p{
+    line-height:1.7;
+    margin-bottom:20px;
+}
+
+button{
+    cursor:pointer;
+}
+
+.primary{
+    background:#087e8b;
+    color:white;
+    border:none;
+    padding:11px 17px;
+    border-radius:6px;
+}
+
+.primary:hover{
+    background:#065e68;
+}
+
+.container{
+    max-width:1100px;
+    margin:30px auto;
+    padding:15px;
+}
+
+h2{
+    margin-bottom:18px;
+    color:#123e4a;
+}
+
+.searchbox{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    margin-bottom:20px;
+}
+
+.doctors{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border-radius:12px;
+    padding:22px;
+    box-shadow:0 3px 12px #00000010;
+}
+
+.card h3{
+    margin:10px 0;
+    color:#087e8b;
+}
+
+.card p{
+    margin:9px 0;
+    color:#526577;
+    line-height:1.5;
+}
+
+.icon{
+    font-size:45px;
+}
+
+.card button{
+    margin-top:12px;
+    width:100%;
+}
+
+.section{
+    background:white;
+    padding:22px;
+    border-radius:10px;
+    margin-top:30px;
+}
+
+input,select,textarea{
+    width:100%;
+    padding:11px;
+    margin:7px 0 14px;
+    border:1px solid #cbd5df;
+    border-radius:6px;
+    outline-color:#087e8b;
+}
+
+label{
+    font-weight:bold;
+    font-size:14px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:18px;
+}
+
+th,td{
+    padding:11px;
+    text-align:left;
+    border-bottom:1px solid #ddd;
+}
+
+th{
+    background:#e3f4f3;
+}
+
+.small{
+    font-size:13px;
+    color:#647789;
+    line-height:1.6;
+}
+
+.danger{
+    background:#b42318;
+    color:white;
+    border:0;
+    border-radius:5px;
+    padding:8px 10px;
+}
+
+.status{
+    color:#087e8b;
+    font-weight:bold;
+}
+
+footer{
+    background:#123e4a;
+    color:white;
+    text-align:center;
+    padding:22px;
+    margin-top:40px;
+}
+
+.hidden{
+    display:none;
+}
+
+.notice{
+    background:#fff6d9;
+    padding:12px;
+    border-radius:7px;
+    line-height:1.6;
+    font-size:13px;
+    margin-top:20px;
+}
+
+@media(max-width:800px){
+    .doctors{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:550px){
+    .doctors{
+        grid-template-columns:1fr;
+    }
+
+    nav{
+        flex-direction:column;
+    }
+
+    .hero h1{
+        font-size:27px;
+    }
+
+    table{
+        font-size:12px;
+    }
+
+    th,td{
+        padding:7px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<nav>
+    <h2>✚ CareConnect</h2>
+
+    <div>
+        <button onclick="goTo('doctors')">Find Doctors</button>
+        <button onclick="goTo('appointments')">My Appointments</button>
+        <button onclick="adminLogin()">Admin</button>
+    </div>
+</nav>
+</header>
+
+<section class="hero">
+    <h1>Online Doctor Appointment</h1>
+
+    <p>
+        Book your doctor appointment easily.<br>
+        Find doctors and manage your appointments online.
+    </p>
+
+    <button class="primary" onclick="goTo('doctors')">
+        Book Appointment
+    </button>
+</section>
+
+<div class="container">
+
+<!-- DOCTORS -->
+
+<section id="doctors">
+    <h2>Our Doctors</h2>
+
+    <input
+        class="searchbox"
+        id="search"
+        type="text"
+        placeholder="Search doctor or specialty..."
+        oninput="displayDoctors()"
+    >
+
+    <div class="doctors" id="doctorList"></div>
+</section>
+
+<!-- BOOKING FORM -->
+
+<section id="booking" class="section hidden">
+
+    <h2>Book Your Appointment</h2>
+
+    <p id="selectedDoctor"></p>
+
+    <form id="bookingForm">
+
+        <input type="hidden" id="doctorId">
+
+        <label>Patient Name *</label>
+        <input
+            type="text"
+            id="patientName"
+            required
+            maxlength="80"
+        >
+
+        <label>Email *</label>
+        <input
+            type="email"
+            id="patientEmail"
+            required
+        >
+
+        <label>Phone Number</label>
+        <input
+            type="tel"
+            id="patientPhone"
+            maxlength="20"
+        >
+
+        <label>Appointment Date *</label>
+        <input
+            type="date"
+            id="appointmentDate"
+            required
+        >
+
+        <label>Appointment Time *</label>
+        <select id="appointmentTime" required></select>
+
+        <label>Appointment Type</label>
+        <select id="appointmentType">
+            <option>In-person</option>
+            <option>Online consultation (demo)</option>
+        </select>
+
+        <label>Reason for Visit (Optional)</label>
+        <textarea
+            id="reason"
+            rows="3"
+            maxlength="200"
+            placeholder="Short note (optional)"
+        ></textarea>
+
+        <p class="small">
+            Please avoid entering sensitive medical information.
+        </p>
+
+        <br>
+
+        <button class="primary" type="submit">
+            Confirm Appointment
+        </button>
+
+        <button
+            type="button"
+            class="danger"
+            onclick="closeBooking()"
+        >
+            Close
+        </button>
+
+    </form>
+</section>
+
+<!-- PATIENT APPOINTMENTS -->
+
+<section id="appointments" class="section">
+
+    <h2>My Appointments</h2>
+
+    <label>Enter your booking email</label>
+
+    <input
+        type="email"
+        id="lookupEmail"
+        placeholder="Enter your email"
+    >
+
+    <button class="primary" onclick="showAppointments()">
+        View Appointments
+    </button>
+
+    <div id="myAppointments"></div>
+
+</section>
+
+<!-- ADMIN PANEL -->
+
+<section id="adminPanel" class="section hidden">
+
+    <h2>Admin Dashboard</h2>
+
+    <p id="adminStats"></p>
+
+    <button class="primary" onclick="exportCSV()">
+        Export Bookings CSV
+    </button>
+
+    <div id="adminBookings"></div>
+
+    <hr style="margin:25px 0">
+
+    <h3>Add Doctor</h3>
+
+    <form id="doctorForm">
+
+        <label>Doctor Name</label>
+        <input id="newDoctorName" required>
+
+        <label>Specialty</label>
+        <select id="newSpecialty">
+            <option>General Physician</option>
+            <option>Dermatologist</option>
+            <option>Cardiologist</option>
+            <option>Pediatrician</option>
+            <option>Gynecologist</option>
+        </select>
+
+        <label>Consultation Fee</label>
+        <input
+            type="number"
+            id="newFee"
+            min="0"
+            max="100000"
+            required
+        >
+
+        <label>Experience</label>
+        <input id="newExperience" required>
+
+        <button class="primary" type="submit">
+            Add Doctor
+        </button>
+
+    </form>
+
+    <br>
+
+    <button class="danger" onclick="resetDemo()">
+        Reset Demo Data
+    </button>
+
+</section>
+
+<div class="notice">
+    <b>Project Demo:</b>
+    This website uses browser LocalStorage.
+    It is not connected to a real hospital, backend or database.
+    The sample doctors are fictional.
+    Admin access is only a demo and is not secure.
+</div>
+
+</div>
+
+<footer>
+    <p>© 2026 CareConnect | Online Doctor Appointment System</p>
+    <p style="margin-top:7px">Student Project Demonstration</p>
+</footer>
+
+<script>
+
+// SAMPLE DOCTORS
+
+const sampleDoctors = [
+    {
+        id:"D1",
+        name:"Dr. Ayesha Khan",
+        specialty:"General Physician",
+        fee:500,
+        exp:"8 years",
+        icon:"👩‍⚕️"
+    },
+    {
+        id:"D2",
+        name:"Dr. Imran Shah",
+        specialty:"Dermatologist",
+        fee:700,
+        exp:"7 years",
+        icon:"👨‍⚕️"
+    },
+    {
+        id:"D3",
+        name:"Dr. Sara Mir",
+        specialty:"Gynecologist",
+        fee:800,
+        exp:"9 years",
+        icon:"👩‍⚕️"
+    },
+    {
+        id:"D4",
+        name:"Dr. Danish Wani",
+        specialty:"Cardiologist",
+        fee:1000,
+        exp:"10 years",
+        icon:"👨‍⚕️"
+    },
+    {
+        id:"D5",
+        name:"Dr. Mehvish Ali",
+        specialty:"Pediatrician",
+        fee:600,
+        exp:"6 years",
+        icon:"👩‍⚕️"
+    },
+    {
+        id:"D6",
+        name:"Dr. Bilal Ahmad",
+        specialty:"General Physician",
+        fee:400,
+        exp:"5 years",
+        icon:"👨‍⚕️"
+    }
+];
+
+// LOAD DATA
+
+function loadData(key, fallback){
+    try{
+        const data = JSON.parse(localStorage.getItem(key));
+        return data ?? fallback;
+    }catch{
+        return fallback;
+    }
+}
+
+let doctors = loadData("careDoctors",sampleDoctors);
+let bookings = loadData("careBookings",[]);
+
+function saveData(){
+    localStorage.setItem(
+        "careDoctors",
+        JSON.stringify(doctors)
+    );
+
+    localStorage.setItem(
+        "careBookings",
+        JSON.stringify(bookings)
+    );
+}
+
+// SAFE HTML TEXT
+
+function escapeHTML(text){
+    return String(text ?? "").replace(
+        /[&<>"']/g,
+        char => ({
+            "&":"&amp;",
+            "<":"&lt;",
+            ">":"&gt;",
+            '"':"&quot;",
+            "'":"&#39;"
+        }[char])
+    );
+}
+
+// NAVIGATION
+
+function goTo(id){
+    document.getElementById(id).scrollIntoView({
+        behavior:"smooth"
+    });
+}
+
+// DISPLAY DOCTORS
+
+function displayDoctors(){
+
+    const search =
+        document.getElementById("search").value.toLowerCase();
+
+    const list = doctors.filter(doctor =>
+        (doctor.name+" "+doctor.specialty)
+        .toLowerCase()
+        .includes(search)
+    );
+
+    const container = document.getElementById("doctorList");
+
+    if(list.length === 0){
+        container.innerHTML = "<p>No doctors found.</p>";
+        return;
+    }
+
+    container.innerHTML = list.map(doctor => `
+
+        <div class="card">
+
+            <div class="icon">${escapeHTML(doctor.icon || "🩺")}</div>
+
+            <h3>${escapeHTML(doctor.name)}</h3>
+
+            <p><b>Specialty:</b>
+            ${escapeHTML(doctor.specialty)}</p>
+
+            <p><b>Experience:</b>
+            ${escapeHTML(doctor.exp)}</p>
+
+            <p><b>Consultation Fee:</b>
+            ₹${Number(doctor.fee).toLocaleString("en-IN")}</p>
+
+            <button
+                class="primary"
+                onclick="bookDoctor('${escapeHTML(doctor.id)}')"
+            >
+                Book Appointment
+            </button>
+
+        </div>
+
+    `).join("");
+}
+
+// AVAILABLE APPOINTMENT TIMES
+
+const allTimes = [
+    "09:00 AM",
+    "09:30 AM",
+    "10:00 AM",
+    "10:30 AM",
+    "11:00 AM",
+    "11:30 AM",
+    "12:00 PM",
+    "02:00 PM",
+    "02:30 PM",
+    "03:00 PM",
+    "03:30 PM",
+    "04:00 PM"
+];
+
+// OPEN BOOKING FORM
+
+function bookDoctor(id){
+
+    const doctor = doctors.find(d => d.id === id);
+
+    if(!doctor) return;
+
+    document.getElementById("doctorId").value = id;
+
+    document.getElementById("selectedDoctor").textContent =
+        doctor.name+" | "+doctor.specialty+
+        " | Fee ₹"+doctor.fee;
+
+    const dateInput =
+        document.getElementById("appointmentDate");
+
+    const today = new Date();
+
+    const localDate = new Date(
+        today.getTime()-today.getTimezoneOffset()*60000
+    ).toISOString().slice(0,10);
+
+    dateInput.min = localDate;
+    dateInput.value = localDate;
+
+    dateInput.onchange = updateTimes;
+
+    updateTimes();
+
+    document.getElementById("booking").classList.remove("hidden");
+
+    goTo("booking");
+}
+
+// REFRESH AVAILABLE TIMES
+
+function updateTimes(){
+
+    const doctorId =
+        document.getElementById("doctorId").value;
+
+    const date =
+        document.getElementById("appointmentDate").value;
+
+    const used = bookings
+        .filter(b =>
+            b.doctorId === doctorId &&
+            b.date === date &&
+            b.status === "Booked"
+        )
+        .map(b => b.time);
+
+    const freeTimes = allTimes.filter(t => !used.includes(t));
+
+    const select =
+        document.getElementById("appointmentTime");
+
+    select.innerHTML = "";
+
+    if(freeTimes.length === 0){
+
+        select.innerHTML =
+            '<option value="">No demo slots available</option>';
+
+        return;
+    }
+
+    freeTimes.forEach(time => {
+
+        const option = document.createElement("option");
+
+        option.value = time;
+        option.textContent = time;
+
+        select.appendChild(option);
+    });
+}
+
+// CLOSE FORM
+
+function closeBooking(){
+
+    document.getElementById("booking").classList.add("hidden");
+
+}
+
+// CREATE APPOINTMENT
+
+document.getElementById("bookingForm")
+.addEventListener("submit",function(e){
+
+    e.preventDefault();
+
+    const doctorId =
+        document.getElementById("doctorId").value;
+
+    const doctor =
+        doctors.find(d => d.id === doctorId);
+
+    const date =
+        document.getElementById("appointmentDate").value;
+
+    const time =
+        document.getElementById("appointmentTime").value;
+
+    const email =
+        document.getElementById("patientEmail")
+        .value.trim().toLowerCase();
+
+    if(!doctor || !time){
+        alert("Please choose an available time.");
+        return;
+    }
+
+    // PREVENT SAME SLOT DOUBLE BOOKING IN THIS BROWSER
+
+    const alreadyBooked = bookings.some(b =>
+        b.doctorId === doctorId &&
+        b.date === date &&
+        b.time === time &&
+        b.status === "Booked"
+    );
+
+    if(alreadyBooked){
+        alert("This time is already booked.");
+        updateTimes();
+        return;
+    }
+
+    const appointment = {
+
+        id:"APT"+Date.now(),
+
+        doctorId:doctor.id,
+        doctor:doctor.name,
+        specialty:doctor.specialty,
+        fee:doctor.fee,
+
+        patient:
+        document.getElementById("patientName").value.trim(),
+
+        email:email,
+
+        phone:
+        document.getElementById("patientPhone").value.trim(),
+
+        date:date,
+        time:time,
+
+        type:
+        document.getElementById("appointmentType").value,
+
+        reason:
+        document.getElementById("reason").value.trim(),
+
+        status:"Booked",
+
+        created:new Date().toISOString()
+
+    };
+
+    bookings.push(appointment);
+
+    saveData();
+
+    document.getElementById("bookingForm").reset();
+
+    closeBooking();
+
+    document.getElementById("lookupEmail").value = email;
+
+    showAppointments();
+
+    alert(
+        "Demo appointment saved successfully!\n"+
+        "Reference: "+appointment.id+
+        "\nThis is not a real clinic confirmation."
+    );
+
+    goTo("appointments");
+
+});
+
+// SHOW PATIENT APPOINTMENTS
+
+function showAppointments(){
+
+    const email =
+        document.getElementById("lookupEmail")
+        .value.trim().toLowerCase();
+
+    const container =
+        document.getElementById("myAppointments");
+
+    if(!email){
+        container.innerHTML = "<p>Please enter your email.</p>";
+        return;
+    }
+
+    const mine = bookings.filter(
+        b => b.email === email
+    );
+
+    if(mine.length === 0){
+        container.innerHTML =
+            "<p>No appointments found.</p>";
+        return;
+    }
+
+    container.innerHTML = mine.map(b => `
+
+        <div class="card" style="margin-top:15px">
+
+            <h3>${escapeHTML(b.doctor)}</h3>
+
+            <p><b>Patient:</b>
+            ${escapeHTML(b.patient)}</p>
+
+            <p><b>Specialty:</b>
+            ${escapeHTML(b.specialty)}</p>
+
+            <p><b>Date:</b>
+            ${escapeHTML(b.date)}</p>
+
+            <p><b>Time:</b>
+            ${escapeHTML(b.time)}</p>
+
+            <p><b>Appointment Type:</b>
+            ${escapeHTML(b.type)}</p>
+
+            <p><b>Fee:</b> ₹${Number(b.fee)}</p>
+
+            <p><b>Reference:</b>
+            ${escapeHTML(b.id)}</p>
+
+            <p><b>Status:</b>
+            <span class="status">
+            ${escapeHTML(b.status)}
+            </span></p>
+
+            ${
+                b.status === "Booked"
+                ? `<button
+                    class="danger"
+                    onclick="cancelAppointment('${escapeHTML(b.id)}')">
+                    Cancel Appointment
+                   </button>`
+                : ""
+            }
+
+        </div>
+
+    `).join("");
+}
+
+// CANCEL APPOINTMENT
+
+function cancelAppointment(id){
+
+    const appointment = bookings.find(
+        b => b.id === id
+    );
+
+    if(!appointment || appointment.status !== "Booked"){
+        return;
+    }
+
+    if(!confirm("Do you want to cancel this appointment?")){
+        return;
+    }
+
+    appointment.status = "Cancelled";
+
+    saveData();
+
+    showAppointments();
+
+    alert("Demo appointment cancelled.");
+}
+
+// ADMIN LOGIN
+
+function adminLogin(){
+
+    const pin = prompt("Enter demo admin PIN:");
+
+    // DEMO PIN ONLY
+    // NOT SECURE AUTHENTICATION
+
+    if(pin !== "2468"){
+        alert("Incorrect PIN.");
+        return;
+    }
+
+    document.getElementById("adminPanel")
+    .classList.remove("hidden");
+
+    renderAdmin();
+
+    goTo("adminPanel");
+}
+
+// ADMIN DASHBOARD
+
+function renderAdmin(){
+
+    const active = bookings.filter(
+        b => b.status === "Booked"
+    ).length;
+
+    document.getElementById("adminStats").textContent =
+        "Total Bookings: "+bookings.length+
+        " | Active: "+active+
+        " | Doctors: "+doctors.length;
+
+    const container =
+        document.getElementById("adminBookings");
+
+    if(bookings.length === 0){
+
+        container.innerHTML = "<p>No bookings available.</p>";
+        return;
+    }
+
+    container.innerHTML = bookings.map(b => `
+
+        <div class="card" style="margin-top:15px">
+
+            <h3>${escapeHTML(b.patient)}</h3>
+
+            <p>Doctor: ${escapeHTML(b.doctor)}</p>
+
+            <p>Email: ${escapeHTML(b.email)}</p>
+
+            <p>Date: ${escapeHTML(b.date)}</p>
+
+            <p>Time: ${escapeHTML(b.time)}</p>
+
+            <p>Reference: ${escapeHTML(b.id)}</p>
+
+            <p>Status: ${escapeHTML(b.status)}</p>
+
+            ${
+                b.status === "Booked"
+                ? `
+                <button
+                    class="primary"
+                    onclick="completeBooking('${escapeHTML(b.id)}')">
+                    Mark Completed
+                </button>
+
+                <button
+                    class="danger"
+                    onclick="adminCancel('${escapeHTML(b.id)}')">
+                    Cancel
+                </button>
+                `
+                : ""
+            }
+
+        </div>
+
+    `).join("");
+}
+
+// MARK COMPLETED
+
+function completeBooking(id){
+
+    const b = bookings.find(x => x.id === id);
+
+    if(!b || b.status !== "Booked") return;
+
+    b.status = "Completed";
+
+    saveData();
+
+    renderAdmin();
+
+    alert("Appointment marked completed.");
+}
+
+// ADMIN CANCEL
+
+function adminCancel(id){
+
+    const b = bookings.find(x => x.id === id);
+
+    if(!b || b.status !== "Booked") return;
+
+    if(!confirm("Cancel this appointment?")) return;
+
+    b.status = "Cancelled";
+
+    saveData();
+
+    renderAdmin();
+}
+
+// ADD NEW DOCTOR
+
+document.getElementById("doctorForm")
+.addEventListener("submit",function(e){
+
+    e.preventDefault();
+
+    const name =
+        document.getElementById("newDoctorName")
+        .value.trim();
+
+    const specialty =
+        document.getElementById("newSpecialty").value;
+
+    const fee =
+        Number(document.getElementById("newFee").value);
+
+    const exp =
+        document.getElementById("newExperience")
+        .value.trim();
+
+    if(!name || !exp || fee < 0 || !Number.isFinite(fee)){
+        alert("Please enter valid doctor details.");
+        return;
+    }
+
+    doctors.push({
+
+        id:"D"+Date.now(),
+
+        name:name,
+        specialty:specialty,
+        fee:fee,
+        exp:exp,
+        icon:"🩺"
+
+    });
+
+    saveData();
+
+    displayDoctors();
+
+    renderAdmin();
+
+    this.reset();
+
+    alert("Doctor added successfully.");
+});
+
+// EXPORT BOOKINGS CSV
+
+function exportCSV(){
+
+    if(bookings.length === 0){
+        alert("No bookings available.");
+        return;
+    }
+
+    const columns = [
+        "id",
+        "patient",
+        "email",
+        "doctor",
+        "specialty",
+        "date",
+        "time",
+        "fee",
+        "status"
+    ];
+
+    const csv = [
+        columns.join(","),
+
+        ...bookings.map(b =>
+            columns.map(k =>
+                '"'+String(b[k] ?? "")
+                .replace(/"/g,'""')+'"'
+            ).join(",")
+        )
+
+    ].join("\r\n");
+
+    const blob = new Blob(
+        [csv],
+        {type:"text/csv"}
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download = "appointments.csv";
+
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+// RESET DEMO
+
+function resetDemo(){
+
+    if(!confirm(
+        "Delete all demo bookings and restore sample doctors?"
+    )){
+        return;
+    }
+
+    bookings = [];
+    doctors = [...sampleDoctors];
+
+    saveData();
+
+    displayDoctors();
+    renderAdmin();
+
+    document.getElementById("myAppointments").innerHTML = "";
+
+    alert("Demo data reset.");
+}
+
+// INITIALIZE
+
+displayDoctors();
+
+</script>
+
+</body>
+</html>
